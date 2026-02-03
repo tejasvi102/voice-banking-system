@@ -1,0 +1,16 @@
+.git
+.gitignore
+.env
+.env.*
+*.md
+docs/
+scripts/
+infra/
+__pycache__
+*.py[cod]
+*$py.class
+.pytest_cache
+.coverage
+htmlcov/
+*.log
+.DS_Store
