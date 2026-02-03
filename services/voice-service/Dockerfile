@@ -1,29 +1,25 @@
-# 1️⃣ Base image
 FROM python:3.11-slim
 
-# 2️⃣ Set working directory
 WORKDIR /app
 
-# 3️⃣ Environment variables (recommended)
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# 4️⃣ Install system dependencies (minimal)
-RUN apt-get update && apt-get install -y \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# 5️⃣ Copy requirements first (for caching)
 COPY requirements.txt .
 
-# 6️⃣ Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install -r requirements.txt
 
-# 7️⃣ Copy application code
 COPY . .
 
-# 8️⃣ Expose port (same inside container)
 EXPOSE 8000
 
-# 9️⃣ Run the service
-CMD ["python", "main.py"]
+CMD ["python", "app/main.py"]
