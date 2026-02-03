@@ -1,5 +1,9 @@
 from fastapi import APIRouter, HTTPException, Depends
+<<<<<<< HEAD
 from app.schemas.auth import RegisterRequest, LoginRequest, RegisterResponse
+=======
+from app.schemas.auth import RegisterRequest, LoginRequest
+>>>>>>> cae5671 (Implement authentication service with user registration and login endpoints)
 from app.services.auth_service import register_user, login_user
 from sqlalchemy.orm import Session
 from app.db.deps import get_db
@@ -8,7 +12,11 @@ from app.core.auth import get_current_user
 router = APIRouter()
 
 
+<<<<<<< HEAD
 @router.post("/register", response_model=RegisterResponse)
+=======
+@router.post("/register")
+>>>>>>> cae5671 (Implement authentication service with user registration and login endpoints)
 def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     try:
         user = register_user(db, payload.email, payload.password)

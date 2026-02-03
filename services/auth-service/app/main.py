@@ -3,6 +3,7 @@ import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 from app.api.auth import router as auth_router
 =======
@@ -16,6 +17,11 @@ import uvicorn
 from app.api.auth import router as auth_router
 # >>>>>>> Stashed changes
 >>>>>>> main
+=======
+from flask import app
+import uvicorn
+from app.api.auth import router as auth_router
+>>>>>>> cae5671 (Implement authentication service with user registration and login endpoints)
 
 # Load .env
 load_dotenv()
@@ -42,15 +48,19 @@ if __name__ == "__main__":
         reload=APP_ENV == "development"
     )
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 # <<<<<<< Updated upstream
 # =======
 >>>>>>> main
+=======
+>>>>>>> cae5671 (Implement authentication service with user registration and login endpoints)
 
 @app.get("/")
 def health():
     return {"status": "auth-service UP"}
 
+<<<<<<< HEAD
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 <<<<<<< HEAD
 =======
@@ -59,3 +69,6 @@ app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 # =======
 # >>>>>>> Stashed changes
 >>>>>>> main
+=======
+app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+>>>>>>> cae5671 (Implement authentication service with user registration and login endpoints)
