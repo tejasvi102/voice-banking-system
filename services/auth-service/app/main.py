@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 from app.api.auth import router as auth_router
 =======
@@ -20,6 +21,9 @@ from app.api.auth import router as auth_router
 =======
 from flask import app
 import uvicorn
+=======
+
+>>>>>>> c25f695 (Enhance authentication service: add RegisterResponse schema, update user model to use UUID, and modify registration endpoint response. Create tables script for database initialization.)
 from app.api.auth import router as auth_router
 >>>>>>> cae5671 (Implement authentication service with user registration and login endpoints)
 
@@ -61,6 +65,7 @@ def health():
     return {"status": "auth-service UP"}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 <<<<<<< HEAD
 =======
@@ -72,3 +77,6 @@ app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 =======
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 >>>>>>> cae5671 (Implement authentication service with user registration and login endpoints)
+=======
+app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+>>>>>>> c25f695 (Enhance authentication service: add RegisterResponse schema, update user model to use UUID, and modify registration endpoint response. Create tables script for database initialization.)
