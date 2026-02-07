@@ -1,8 +1,8 @@
 import os
+import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
-from flask import app
-import uvicorn
+
 from app.api.auth import router as auth_router
 
 # Load .env
@@ -24,7 +24,7 @@ def auth():
 
 if __name__ == "__main__":
     uvicorn.run(
-        "main:app",
+        "app.main:app",
         host="0.0.0.0",
         port=APP_PORT,
         reload=APP_ENV == "development"

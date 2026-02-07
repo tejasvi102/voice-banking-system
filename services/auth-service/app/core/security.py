@@ -4,9 +4,9 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 from app.core.config import settings
 
-SECRET_KEY = settings.SECRET_KEY
-ALGORITHM = settings.ALGORITHM
-ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
+SECRET_KEY = settings.jwt_secret_key
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.jwt_expire_minutes
 
 # hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
