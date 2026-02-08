@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 import uvicorn
+from app.api.v1.endpoints.users import router as users_router
 
 # Load environment variables
 load_dotenv()
@@ -24,8 +25,10 @@ def health():
 
 if __name__ == "__main__":
     uvicorn.run(
-        "main:app",
+        "app.main:app",
         host="0.0.0.0",
         port=APP_PORT,
         reload=APP_ENV == "development"
     )
+
+app.include_router(users_router)
