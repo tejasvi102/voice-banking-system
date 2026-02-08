@@ -3,7 +3,10 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 import uvicorn
 from app.api.v1.endpoints.users import router as users_router
+from app.db.migrations.session import engine
+from app.db.migrations.base import Base
 
+Base.metadata.create_all(bind=engine)
 # Load environment variables
 load_dotenv()
 
@@ -31,4 +34,5 @@ if __name__ == "__main__":
         reload=APP_ENV == "development"
     )
 
-app.include_router(users_router)
+app.include_router(users_router, prefix="/api/v1")
+
