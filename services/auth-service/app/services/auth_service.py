@@ -23,4 +23,4 @@ def login_user(db: Session, email: str, password: str):
     if not user or not verify_password(password, user.password_hash):
         raise ValueError("Invalid credentials")
 
-    return create_access_token({"sub": user.email})
+    return create_access_token(user)
