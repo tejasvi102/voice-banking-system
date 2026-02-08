@@ -3,8 +3,11 @@ import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import uvicorn
 =======
+=======
+>>>>>>> Stashed changes
 
 from app.api.auth import router as auth_router
 >>>>>>> Stashed changes
@@ -41,4 +44,7 @@ def health():
     return {"status": "auth-service UP"}
 
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
