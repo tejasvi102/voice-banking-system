@@ -1,8 +1,12 @@
 import requests
+import os
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 security = HTTPBearer()
+
+JWT_SECRET = os.getenv("JWT_SECRET")
+JWT_ALGORITHM = "HS256"
 
 AUTH_VERIFY_URL = "http://localhost:8001/auth/verify"
 

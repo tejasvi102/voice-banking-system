@@ -4,6 +4,7 @@ from app.db.migrations.deps import get_db
 from app.schemas.user import UserCreateRequest, UserResponse
 from app.services.user_service import create_user, get_user_by_auth_id
 from app.core.auth import get_current_auth_user
+# from app.core.auth import get_current_user
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -13,7 +14,7 @@ def create_user_profile(
     db: Session = Depends(get_db),
     auth_payload: dict = Depends(get_current_auth_user),
 ):
-    auth_user_id = auth_payload.get("sub")
+    auth_user_id = auth_payload["sub"]
 
     user = create_user(
         db=db,
