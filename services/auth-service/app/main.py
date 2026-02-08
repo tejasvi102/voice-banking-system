@@ -1,7 +1,13 @@
 import os
+import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
+<<<<<<< Updated upstream
 import uvicorn
+=======
+
+from app.api.auth import router as auth_router
+>>>>>>> Stashed changes
 
 # Load .env
 load_dotenv()
@@ -27,3 +33,12 @@ if __name__ == "__main__":
         port=APP_PORT,
         reload=APP_ENV == "development"
     )
+<<<<<<< Updated upstream
+=======
+
+@app.get("/")
+def health():
+    return {"status": "auth-service UP"}
+
+app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+>>>>>>> Stashed changes
