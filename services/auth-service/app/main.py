@@ -5,17 +5,18 @@ from fastapi import FastAPI
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
-
-from app.api.auth import router as auth_router
+<<<<<<< HEAD
 =======
-# <<<<<<< Updated upstream
-# <<<<<<< Updated upstream
-import uvicorn
-# =======
-# =======
-# >>>>>>> Stashed changes
+
+>>>>>>> d90f000 (feat: implement JWT authentication and token verification in auth service)
 
 from app.api.auth import router as auth_router
+
+import uvicorn
+
+
+from app.api.auth import router as auth_router
+<<<<<<< HEAD
 # >>>>>>> Stashed changes
 >>>>>>> main
 =======
@@ -26,6 +27,8 @@ import uvicorn
 >>>>>>> c25f695 (Enhance authentication service: add RegisterResponse schema, update user model to use UUID, and modify registration endpoint response. Create tables script for database initialization.)
 from app.api.auth import router as auth_router
 >>>>>>> cae5671 (Implement authentication service with user registration and login endpoints)
+=======
+>>>>>>> d90f000 (feat: implement JWT authentication and token verification in auth service)
 
 # Load .env
 load_dotenv()
@@ -53,12 +56,15 @@ if __name__ == "__main__":
     )
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 # <<<<<<< Updated upstream
 # =======
 >>>>>>> main
 =======
 >>>>>>> cae5671 (Implement authentication service with user registration and login endpoints)
+=======
+>>>>>>> d90f000 (feat: implement JWT authentication and token verification in auth service)
 
 @app.get("/")
 def health():
@@ -67,6 +73,7 @@ def health():
 <<<<<<< HEAD
 <<<<<<< HEAD
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 # <<<<<<< Updated upstream
@@ -80,3 +87,6 @@ app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 =======
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 >>>>>>> c25f695 (Enhance authentication service: add RegisterResponse schema, update user model to use UUID, and modify registration endpoint response. Create tables script for database initialization.)
+=======
+
+>>>>>>> d90f000 (feat: implement JWT authentication and token verification in auth service)

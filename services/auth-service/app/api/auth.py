@@ -12,8 +12,12 @@ from app.services.auth_service import register_user, login_user
 from sqlalchemy.orm import Session
 from app.db.deps import get_db
 from app.core.auth import get_current_user
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+import jwt
+from app.core.config import JWT_SECRET
 
 router = APIRouter()
+http_bearer = HTTPBearer()
 
 
 <<<<<<< HEAD
@@ -42,8 +46,16 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail=str(e))
     
 @router.get("/verify")
-def verify_token(payload: dict = Depends(get_current_user)):
-    return {
-        "valid": True,
-        "email": payload.get("sub")
-    }    
+def verify_token(
+    credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
+):
+    token = credentials.credentials
+
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        return payload   # ✅ contains sub (UUID) + email
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
