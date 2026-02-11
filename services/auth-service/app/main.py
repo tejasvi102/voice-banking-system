@@ -5,6 +5,7 @@ from fastapi import FastAPI
 
 
 from app.api.auth import router as auth_router
+from app.db.migrations.bootstrap import ensure_refresh_token_columns
 
 import uvicorn
 
@@ -19,6 +20,10 @@ APP_ENV = os.getenv("APP_ENV")
 APP_PORT = int(os.getenv("APP_PORT", 8000))
 
 app = FastAPI(title=APP_NAME)
+
+@app.on_event("startup")
+def startup() -> None:
+    ensure_refresh_token_columns()
 
 @app.get("/auth")
 def auth():
@@ -40,5 +45,5 @@ if __name__ == "__main__":
 def health():
     return {"status": "auth-service UP"}
 
-app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+app.include_router(auth_router)
 
