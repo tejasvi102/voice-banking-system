@@ -39,3 +39,5 @@ class User(Base):
     password_hash = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    refresh_token_hash = Column(String, nullable=True)
+    refresh_token_expires_at = Column(DateTime(timezone=True), nullable=True)

@@ -32,16 +32,29 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 
 
-def create_access_token(user):
+def create_access_token(user=None, *, user_id: str | None = None, email: str | None = None) -> str:
+    if user is not None:
+        if user_id is None:
+            user_id = getattr(user, "id", None)
+        if email is None:
+            email = getattr(user, "email", None)
+
+    if user_id is None:
+        raise ValueError("user_id is required to create access token")
+
     payload = {
-        "sub": str(user.id),
-        "email": user.email,
-        "exp": datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
-        "iat": datetime.utcnow(),
+        "sub": str(user_id),   # ✅ IMPORTANT
+        "email": email,
+        "exp": datetime.utcnow() + timedelta(
+            minutes=settings.jwt_expire_minutes
+        ),
     }
 
-    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-    return token
+    return jwt.encode(
+        payload,
+        settings.jwt_secret_key,
+        algorithm="HS256",
+    )
 def decode_access_token(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])

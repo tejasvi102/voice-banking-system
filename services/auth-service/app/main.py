@@ -11,6 +11,7 @@ from fastapi import FastAPI
 >>>>>>> d90f000 (feat: implement JWT authentication and token verification in auth service)
 
 from app.api.auth import router as auth_router
+from app.db.migrations.bootstrap import ensure_refresh_token_columns
 
 import uvicorn
 
@@ -38,6 +39,10 @@ APP_ENV = os.getenv("APP_ENV")
 APP_PORT = int(os.getenv("APP_PORT", 8000))
 
 app = FastAPI(title=APP_NAME)
+
+@app.on_event("startup")
+def startup() -> None:
+    ensure_refresh_token_columns()
 
 @app.get("/auth")
 def auth():
@@ -72,6 +77,7 @@ def health():
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -88,5 +94,8 @@ app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 >>>>>>> c25f695 (Enhance authentication service: add RegisterResponse schema, update user model to use UUID, and modify registration endpoint response. Create tables script for database initialization.)
 =======
+=======
+app.include_router(auth_router)
+>>>>>>> 6e5649f (VB-04: Complete Auth system with refresh rotation, logout, hashing + user service integration)
 
 >>>>>>> d90f000 (feat: implement JWT authentication and token verification in auth service)

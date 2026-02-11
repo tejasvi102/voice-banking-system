@@ -3,12 +3,17 @@ from pydantic import BaseModel, EmailStr
 <<<<<<< HEAD
 from uuid import UUID
 
+<<<<<<< HEAD
 =======
 >>>>>>> cae5671 (Implement authentication service with user registration and login endpoints)
 =======
 from uuid import UUID
 
 >>>>>>> c25f695 (Enhance authentication service: add RegisterResponse schema, update user model to use UUID, and modify registration endpoint response. Create tables script for database initialization.)
+=======
+class RefreshTokenRequest(BaseModel):
+    refresh_token:str
+>>>>>>> 6e5649f (VB-04: Complete Auth system with refresh rotation, logout, hashing + user service integration)
 
 class RegisterRequest(BaseModel):
     email: EmailStr
@@ -32,11 +37,17 @@ class RegisterResponse(BaseModel):
     email: EmailStr
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> cae5671 (Implement authentication service with user registration and login endpoints)
 =======
 >>>>>>> c25f695 (Enhance authentication service: add RegisterResponse schema, update user model to use UUID, and modify registration endpoint response. Create tables script for database initialization.)
 =======
+=======
+    access_token: str
+    refresh_token: str
+    token_type: str
+>>>>>>> 6e5649f (VB-04: Complete Auth system with refresh rotation, logout, hashing + user service integration)
     # phone: int
     # full_name: str
 >>>>>>> d90f000 (feat: implement JWT authentication and token verification in auth service)
