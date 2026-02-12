@@ -4,9 +4,9 @@ from app.db.migrations.deps import get_db
 from app.schemas.user import UserCreateRequest, UserResponse
 from app.services.user_service import create_user, get_user_by_auth_id
 from app.core.auth import get_current_auth_user
-# from app.core.auth import get_current_user
 
 router = APIRouter(prefix="/users", tags=["Users"])
+
 
 @router.post("", response_model=UserResponse)
 def create_user_profile(
@@ -16,14 +16,17 @@ def create_user_profile(
 ):
     auth_user_id = auth_payload["sub"]
 
-    user = create_user(
-        db=db,
-        auth_user_id=auth_user_id,
-        email=payload.email,
-        full_name=payload.full_name,
-        phone=payload.phone,
-    )
-    return user
+    try:
+        user = create_user(
+            db=db,
+            auth_user_id=auth_user_id,
+            email=payload.email,
+            full_name=payload.full_name,
+            phone=payload.phone,
+        )
+        return user
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @router.get("/me", response_model=UserResponse)

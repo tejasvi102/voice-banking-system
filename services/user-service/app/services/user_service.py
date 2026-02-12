@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from app.models.user import User
 
+
 def create_user(
     db: Session,
     auth_user_id,
@@ -8,21 +9,15 @@ def create_user(
     full_name: str | None,
     phone: str | None,
 ):
-    existing = (
-        db.query(User)
-        .filter(User.auth_user_id == auth_user_id)
-        .first()
-    )
-    if existing:
-        return existing
+    user = db.query(User).filter(User.id == auth_user_id).first()
+    if not user:
+        raise ValueError("User not found")
 
-    user = User(
-        auth_user_id=auth_user_id,
-        email=email,
-        full_name=full_name,
-        phone=phone,
-    )
-    db.add(user)
+    if email:
+        user.email = email
+    user.full_name = full_name
+    user.phone = phone
+
     db.commit()
     db.refresh(user)
     return user
@@ -31,6 +26,6 @@ def create_user(
 def get_user_by_auth_id(db: Session, auth_user_id):
     return (
         db.query(User)
-        .filter(User.auth_user_id == auth_user_id)
+        .filter(User.id == auth_user_id)
         .first()
     )
