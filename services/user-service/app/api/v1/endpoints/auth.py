@@ -1,24 +1,11 @@
-from fastapi import APIRouter, HTTPException, Depends
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-from app.schemas.auth import RegisterRequest, LoginRequest, RegisterResponse
-=======
-from app.schemas.auth import RegisterRequest, LoginRequest
->>>>>>> cae5671 (Implement authentication service with user registration and login endpoints)
-=======
-from app.schemas.auth import RegisterRequest, LoginRequest, RegisterResponse
->>>>>>> c25f695 (Enhance authentication service: add RegisterResponse schema, update user model to use UUID, and modify registration endpoint response. Create tables script for database initialization.)
-from app.services.auth_service import register_user, login_user
-=======
->>>>>>> 6e5649f (VB-04: Complete Auth system with refresh rotation, logout, hashing + user service integration)
-from sqlalchemy.orm import Session
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from datetime import datetime, timezone
-from app.core.config import settings
+from fastapi import APIRouter, HTTPException, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy.orm import Session
+
 from app.schemas.auth import RegisterRequest, LoginRequest, RegisterResponse, RefreshTokenRequest
 from app.services.auth_service import register_user, authenticate_user
-from app.db.deps import get_db
+from app.db.migrations.deps import get_db
 from app.core.security import create_access_token, decode_access_token
 from app.core.tokens import generate_refresh_token, refresh_expiry, hash_refresh_token
 from app.models.user import User
@@ -26,20 +13,9 @@ from app.models.user import User
 router = APIRouter(prefix="/auth", tags=["Auth"])
 http_bearer = HTTPBearer()
 
-<<<<<<< HEAD
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 # ---------------- REGISTER ----------------
->>>>>>> 6e5649f (VB-04: Complete Auth system with refresh rotation, logout, hashing + user service integration)
 @router.post("/register", response_model=RegisterResponse)
-=======
-@router.post("/register")
->>>>>>> cae5671 (Implement authentication service with user registration and login endpoints)
-=======
-@router.post("/register", response_model=RegisterResponse)
->>>>>>> c25f695 (Enhance authentication service: add RegisterResponse schema, update user model to use UUID, and modify registration endpoint response. Create tables script for database initialization.)
 def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     try:
         user = register_user(db, payload.email, payload.password)
@@ -143,7 +119,7 @@ def logout(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # 🔥 revoke refresh token
+    # revoke refresh token
     user.refresh_token_hash = None
     user.refresh_token_expires_at = None
     db.commit()
