@@ -14,6 +14,10 @@ APP_PORT = int(os.getenv("APP_PORT", 8000))
 
 app = FastAPI(title=APP_NAME)
 
+@app.on_event("startup")
+def startup() -> None:
+    ensure_refresh_token_columns()
+
 @app.get("/auth")
 def auth():
     return {
@@ -34,4 +38,7 @@ if __name__ == "__main__":
 def health():
     return {"status": "auth-service UP"}
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
