@@ -1,0 +1,7 @@
+speechbrain
+torch
+torchaudio
+pgvector
+psycopg2-binary
+numpy
+python-multipart
