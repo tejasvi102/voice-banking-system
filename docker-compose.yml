@@ -86,6 +86,7 @@ services:
       start_period: 40s
     networks:
       - voice-banking-network
+      
 
   notification-service:
     build:
@@ -131,24 +132,24 @@ services:
     networks:
       - voice-banking-network
 
-  stt-service:
-    build:
-      context: ./services/stt-service
-      dockerfile: Dockerfile
-    container_name: voice-banking-stt
-    restart: unless-stopped
-    env_file:
-      - ./services/stt-service/.env
-    ports:
-      - "${STT_SERVICE_PORT:-8006}:8000"
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    networks:
-      - voice-banking-network
+  # stt-service:
+  #   build:
+  #     context: ./services/stt-service
+  #     dockerfile: Dockerfile
+  #   container_name: voice-banking-stt
+  #   restart: unless-stopped
+  #   env_file:
+  #     - ./services/stt-service/.env
+  #   ports:
+  #     - "${STT_SERVICE_PORT:-8006}:8000"
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 40s
+  #   networks:
+  #     - voice-banking-network
 
   api-gateway:
     build:
@@ -177,6 +178,19 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    networks:
+      - voice-banking-network
+
+  voice-db:
+    image: ankane/pgvector
+    container_name: voice-banking-voice-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: voice_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
     networks:
       - voice-banking-network
 
