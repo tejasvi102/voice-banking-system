@@ -1,9 +1,9 @@
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 from app.db.migrations.session import get_db
 from app.models.voice_profile import VoiceProfile
-from app.services.biometric_service import extract_embedding
-from app.services.biometric_service import compute_similarity
+from app.services.biometric_service import extract_embedding, verify_voice as verify_voice_embedding
 import uuid
 import os
 
@@ -28,8 +28,12 @@ async def enroll_voice(
         embedding=embedding.tolist()
     )
 
-    db.add(voice_profile)
-    db.commit()
+    try:
+        db.add(voice_profile)
+        db.commit()
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Database error while saving voice profile")
 
     return {"message": "Voice enrolled successfully"}
 
@@ -40,11 +44,6 @@ async def verify_voice(
     audio: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
-    profile = db.query(VoiceProfile).filter_by(user_id=user_id).first()
-
-    if not profile:
-        raise HTTPException(status_code=404, detail="Voice profile not found")
-
     file_path = f"temp_{audio.filename}"
     with open(file_path, "wb") as buffer:
         buffer.write(await audio.read())
@@ -52,10 +51,11 @@ async def verify_voice(
     new_embedding = extract_embedding(file_path)
     os.remove(file_path)
 
-    similarity = compute_similarity(profile.embedding, new_embedding)
-
-    threshold = 0.80
-    verified = similarity >= threshold
+    try:
+        verified, similarity = verify_voice_embedding(db, user_id, new_embedding)
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Database error while verifying voice profile")
 
     return {
         "verified": verified,

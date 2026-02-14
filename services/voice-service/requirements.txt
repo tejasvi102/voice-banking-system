@@ -1,7 +1,8 @@
 speechbrain
 torch
 torchaudio
-pgvector
 psycopg2-binary
 numpy
 python-multipart
+soundfile
+huggingface_hub<1.0
