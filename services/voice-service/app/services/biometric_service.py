@@ -1,67 +1,110 @@
-import torch
-import torchaudio
+import os
+import asyncio
 import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
-from app.models.voice_profile import VoiceProfile
-from sqlalchemy import select
+from fastapi import HTTPException
 
-# torchaudio 2.10 removed list_audio_backends, but current SpeechBrain still calls it.
-if not hasattr(torchaudio, "list_audio_backends"):
-    torchaudio.list_audio_backends = lambda: ["soundfile"]
+from app.repositories.voice_repository import (
+    get_user_embedding,
+    save_voice_embedding,
+)
+from app.services.embedding_service import (
+    extract_embedding as extract_upload_embedding,
+)
 
-_classifier = None
+THRESHOLD = 0.80
 
 
-def _get_classifier():
-    global _classifier
-    if _classifier is None:
-        from speechbrain.inference.classifiers import EncoderClassifier
+# -------------------------------
+# Cosine Similarity
+# -------------------------------
+def compute_similarity(embedding1, embedding2) -> float:
+    vec1 = np.asarray(embedding1, dtype=np.float32).flatten()
+    vec2 = np.asarray(embedding2, dtype=np.float32).flatten()
 
-        _classifier = EncoderClassifier.from_hparams(
-            source="speechbrain/spkrec-ecapa-voxceleb",
-            savedir="pretrained_models/ecapa"
+    denominator = np.linalg.norm(vec1) * np.linalg.norm(vec2)
+
+    if denominator == 0:
+        return 0.0
+
+    similarity = np.dot(vec1, vec2) / denominator
+
+    return float(similarity)   # 🔥 ensures no ambiguous numpy truth error
+
+
+# -------------------------------
+# Register Voice
+# -------------------------------
+async def register_voice(user_id: str, file):
+    embedding = await extract_upload_embedding(file)
+
+    await save_voice_embedding(user_id, embedding)
+
+    return {"status": "registered"}
+
+
+# -------------------------------
+# Verify Voice
+# -------------------------------
+async def verify_voice(user_id: str, file):
+    new_embedding = await extract_upload_embedding(file)
+
+    stored_embedding = await get_user_embedding(user_id)
+
+    if stored_embedding is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Voice profile not found",
         )
-    return _classifier
 
-def extract_embedding_from_file(file_path: str):
-    signal, fs = torchaudio.load(file_path)
+    similarity = compute_similarity(new_embedding, stored_embedding)
 
-    # Convert to mono if stereo
-    if signal.shape[0] > 1:
-        signal = torch.mean(signal, dim=0, keepdim=True)
-
-    classifier = _get_classifier()
-    embedding = classifier.encode_batch(signal)
-    embedding = embedding.squeeze().detach().numpy()
-
-    # Normalize embedding (important for cosine similarity)
-    embedding = embedding / np.linalg.norm(embedding)
-
-    return embedding
+    return {
+        "verified": bool(similarity > THRESHOLD),
+        "score": similarity,
+    }
 
 
+# -------------------------------
+# File-path based embedding helper
+# (used for enroll/verify from file path endpoints)
+# -------------------------------
 def extract_embedding(file_path: str):
-    return extract_embedding_from_file(file_path)
+    class _PathUploadFile:
+        def __init__(self, path: str):
+            self._path = path
+            self.filename = os.path.basename(path)
 
-def compute_similarity(embedding1, embedding2):
-    similarity = cosine_similarity(
-        [embedding1],
-        [embedding2]
-    )[0][0]
-    return float(similarity)
+        async def read(self):
+            with open(self._path, "rb") as f:
+                return f.read()
 
+    async def _extract():
+        return await extract_upload_embedding(_PathUploadFile(file_path))
 
-def verify_voice(db, user_id, incoming_embedding):
-    result = db.execute(
-        select(
-            1 - VoiceProfile.embedding.cosine_distance(incoming_embedding)
-        ).where(VoiceProfile.user_id == user_id)
-    ).scalar()
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = None
 
-    if result is None:
-        return False, 0.0
+    if loop and loop.is_running():
+        import threading
 
-    similarity = float(result)
-    threshold = 0.80
+        result_holder = {}
+        error_holder = {}
 
-    return similarity >= threshold, similarity
+        def _worker():
+            try:
+                result_holder["value"] = asyncio.run(_extract())
+            except Exception as exc:
+                error_holder["error"] = exc
+
+        thread = threading.Thread(target=_worker, daemon=True)
+        thread.start()
+        thread.join()
+
+        if "error" in error_holder:
+            raise error_holder["error"]
+
+        return result_holder["value"]
+
+    return asyncio.run(_extract())
