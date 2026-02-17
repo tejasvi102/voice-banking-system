@@ -1,47 +1,50 @@
-import torch
-import librosa
+import os
+import requests
 import tempfile
-from transformers import AutoProcessor, AutoModelForSpeechSeq2Seq
+from dotenv import load_dotenv
 
-MODEL_ID = "ai4bharat/indic-whisper-small"
+load_dotenv()
 
-_processor = None
-_model = None
+HF_TOKEN = os.getenv("HF_TOKEN")
 
-def _load_model():
-    global _processor, _model
+# Use HF router inference endpoint (legacy api-inference is deprecated).
+MODEL_ID = "openai/whisper-large-v3"
+API_URL = f"https://router.huggingface.co/hf-inference/models/{MODEL_ID}"
 
-    if _processor is None or _model is None:
-        _processor = AutoProcessor.from_pretrained(MODEL_ID)
-        _model = AutoModelForSpeechSeq2Seq.from_pretrained(MODEL_ID)
-        _model.eval()
-
-    return _processor, _model
+HEADERS = {"Authorization": f"Bearer {HF_TOKEN}"} if HF_TOKEN else {}
 
 
 async def transcribe(file):
-    """
-    Takes UploadFile and returns transcribed text
-    """
 
-    processor, model = _load_model()
-
-    # Save uploaded file temporarily
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
-        tmp.write(await file.read())
+        content = await file.read()
+        tmp.write(content)
         tmp_path = tmp.name
 
-    # Load audio
-    audio, sr = librosa.load(tmp_path, sr=16000)
+    if not HF_TOKEN:
+        raise Exception("HF_TOKEN is not set. Set it in your environment or .env.")
 
-    inputs = processor(audio, sampling_rate=16000, return_tensors="pt")
+    with open(tmp_path, "rb") as f:
+        audio_bytes = f.read()
 
-    with torch.no_grad():
-        generated_ids = model.generate(**inputs)
+    headers = dict(HEADERS)
+    headers["Content-Type"] = "audio/wav"
 
-    transcription = processor.batch_decode(
-        generated_ids,
-        skip_special_tokens=True
-    )[0]
+    response = requests.post(
+        API_URL,
+        headers=headers,
+        data=audio_bytes,
+        timeout=120
+    )
 
-    return transcription
+    os.remove(tmp_path)
+
+    if response.status_code != 200:
+        raise Exception(f"HF inference error {response.status_code}: {response.text}")
+
+    result = response.json()
+
+    return {
+        "text": result.get("text", "").strip(),
+        "language": result.get("language", "auto")
+    }
