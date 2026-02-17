@@ -1,57 +1,46 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import torch
+import os
+import json
+from groq import Groq
+from dotenv import load_dotenv
 
-MODEL_ID = "meta-llama/Meta-Llama-3-8B-Instruct"
+load_dotenv()
 
-_tokenizer = None
-_model = None
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-def _load_model():
-    global _tokenizer, _model
-
-    if _tokenizer is None or _model is None:
-        _tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
-        _model = AutoModelForCausalLM.from_pretrained(
-            MODEL_ID,
-            torch_dtype=torch.float16,
-            device_map="auto"
-        )
-        _model.eval()
-
-    return _tokenizer, _model
+# Llama 3 8B model on Groq was deprecated; use current replacement by default.
+MODEL_ID = os.getenv("GROQ_INTENT_MODEL", "llama-3.1-8b-instant")
 
 
-async def detect_intent(text: str):
-    tokenizer, model = _load_model()
+async def detect_intent_and_entities(text):
 
     prompt = f"""
-You are a banking intent classifier.
+Extract banking intent and entities.
 
-Classify the user intent into one of:
-- balance_check
-- transfer_money
-- withdraw_money
-- deposit_money
-- other
+Command: "{text}"
 
-User input:
-"{text}"
+Return ONLY JSON:
 
-Return only the intent label.
+{{
+  "intent": "balance_check | transfer_money | transaction_history | other",
+  "amount": number or null,
+  "recipient": string or null
+}}
 """
 
-    inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+    response = client.chat.completions.create(
 
-    with torch.no_grad():
-        output = model.generate(
-            **inputs,
-            max_new_tokens=20,
-            temperature=0.0
-        )
+        model=MODEL_ID,
 
-    result = tokenizer.decode(output[0], skip_special_tokens=True)
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
 
-    # Extract last line as intent
-    intent = result.strip().split("\n")[-1].strip()
+        temperature=0,
+    )
 
-    return intent
+    result = response.choices[0].message.content
+
+    return json.loads(result)

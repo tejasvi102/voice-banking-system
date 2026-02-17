@@ -14,11 +14,10 @@ class User(Base):
         default=uuid.uuid4,
         index=True,
     )
-    auth_user_id = Column(UUID(as_uuid=True), nullable=False, unique=True, index=True)
 
     email = Column(String, unique=True, nullable=False, index=True)
     password_hash = Column(String, nullable=False)
-    full_name = Column(String, nullable=True)
+    full_name = Column(String, nullable=False)
     phone = Column(String, nullable=True)
 
     is_active = Column(Boolean, default=True)
