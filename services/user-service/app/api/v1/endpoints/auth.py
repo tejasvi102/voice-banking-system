@@ -18,7 +18,7 @@ http_bearer = HTTPBearer()
 @router.post("/register", response_model=RegisterResponse)
 def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     try:
-        user = register_user(db, payload.email, payload.password)
+        user = register_user(db, payload.email, payload.password, payload.full_name)
 
         access_token = create_access_token(
             user_id=str(user.id),

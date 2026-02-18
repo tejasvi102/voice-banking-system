@@ -4,7 +4,7 @@ from app.models.user import User
 from app.core.security import hash_password, verify_password
 
 
-def register_user(db: Session, email: str, password: str):
+def register_user(db: Session, email: str, password: str, full_name: str):
     existing = db.query(User).filter(User.email == email).first()
     if existing:
         raise ValueError("User already exists")
@@ -12,8 +12,8 @@ def register_user(db: Session, email: str, password: str):
     user_id = uuid.uuid4()
     user = User(
         id=user_id,
-        auth_user_id=user_id,
         email=email,
+        full_name=full_name,
         password_hash=hash_password(password),
     )
     db.add(user)
