@@ -2,6 +2,8 @@ import os
 import requests
 import tempfile
 from dotenv import load_dotenv
+from langdetect import detect, LangDetectException
+
 
 load_dotenv()
 
@@ -44,7 +46,14 @@ async def transcribe(file):
 
     result = response.json()
 
+    text = result.get("text", "").strip()
+
+    try:
+        language = detect(text) if text else "unknown"
+    except LangDetectException:
+        language = "unknown"
+
     return {
-        "text": result.get("text", "").strip(),
-        "language": result.get("language", "auto")
+        "text": text,
+        "language": language
     }

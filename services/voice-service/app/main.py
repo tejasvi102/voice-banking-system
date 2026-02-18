@@ -4,7 +4,8 @@ from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from fastapi import FastAPI
 import uvicorn
-
+from fastapi import Request
+from fastapi.responses import JSONResponse
 from app.api.v1.endpoints import biometric, voice_command
 from app.models import voice_profile
 from app.db.migrations.session import Base, engine
@@ -84,6 +85,15 @@ def health():
         "status": "UP"
     }
 
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=500,
+        content={
+            "status": "error",
+            "message": "Internal server error"
+        }
+    )
 
 if __name__ == "__main__":
     uvicorn.run(
