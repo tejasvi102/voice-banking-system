@@ -5,17 +5,25 @@ from app.models.account import Account
 from app.models.transaction import Transaction
 
 
-def get_user_transactions(db: Session, user_id: str):
+def get_user_transactions(
+    db: Session,
+    user_id: str,
+    limit: int = 10,
+    offset: int = 0
+):
     try:
         user_uuid = uuid.UUID(user_id)
     except (TypeError, ValueError):
         return None
 
-    account = db.query(Account).filter(Account.user_id == user_uuid).first()
+    account = db.query(Account).filter(
+        Account.user_id == user_uuid
+    ).first()
+
     if not account:
         return None
 
-    return (
+    transactions = (
         db.query(Transaction)
         .filter(
             or_(
@@ -24,5 +32,9 @@ def get_user_transactions(db: Session, user_id: str):
             )
         )
         .order_by(Transaction.created_at.desc())
+        .limit(limit)
+        .offset(offset)
         .all()
     )
+
+    return transactions
