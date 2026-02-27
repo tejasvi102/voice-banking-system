@@ -3,6 +3,7 @@ import requests
 import tempfile
 from dotenv import load_dotenv
 from langdetect import detect, LangDetectException
+from fastapi import HTTPException
 
 
 load_dotenv()
@@ -24,25 +25,32 @@ async def transcribe(file):
         tmp_path = tmp.name
 
     if not HF_TOKEN:
-        raise Exception("HF_TOKEN is not set. Set it in your environment or .env.")
+        raise HTTPException(status_code=500, detail="HF_TOKEN is not configured")
 
     with open(tmp_path, "rb") as f:
         audio_bytes = f.read()
 
     headers = dict(HEADERS)
-    headers["Content-Type"] = "audio/wav"
+    headers["Content-Type"] = file.content_type or "application/octet-stream"
 
-    response = requests.post(
-        API_URL,
-        headers=headers,
-        data=audio_bytes,
-        timeout=120
-    )
+    try:
+        response = requests.post(
+            API_URL,
+            headers=headers,
+            data=audio_bytes,
+            timeout=120
+        )
+    except requests.RequestException:
+        os.remove(tmp_path)
+        raise HTTPException(status_code=503, detail="Speech-to-text service unavailable")
 
     os.remove(tmp_path)
 
     if response.status_code != 200:
-        raise Exception(f"HF inference error {response.status_code}: {response.text}")
+        raise HTTPException(
+            status_code=502,
+            detail=f"Speech-to-text failed with status {response.status_code}"
+        )
 
     result = response.json()
 

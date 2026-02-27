@@ -2,7 +2,7 @@ import os
 import logging
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 import uvicorn
 from fastapi import Request
 from fastapi.responses import JSONResponse
@@ -93,6 +93,14 @@ async def global_exception_handler(request: Request, exc: Exception):
             "status": "error",
             "message": "Internal server error"
         }
+    )
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail}
     )
 
 if __name__ == "__main__":

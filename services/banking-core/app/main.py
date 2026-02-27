@@ -2,6 +2,12 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 import uvicorn
+from app.db.migrations.session import engine, Base
+from app.models.account import Account
+from app.models.transaction import Transaction
+from app.api.v1.endpoints import transfer, accounts, transactions
+
+Base.metadata.create_all(bind=engine)
 
 # Load environment variables
 load_dotenv()
@@ -22,9 +28,29 @@ def health():
     }
 
 
+app.include_router(
+    transfer.router,
+    prefix="/transfers",
+    tags=["Transfers"]
+)
+
+
+
+app.include_router(
+    accounts.router,
+    prefix="/accounts",
+    tags=["Accounts"]
+)
+
+app.include_router(
+    transactions.router,
+    prefix="/transactions",
+    tags=["Transactions"]
+)
+
 if __name__ == "__main__":
     uvicorn.run(
-        "main:app",
+        "app.main:app",
         host="0.0.0.0",
         port=APP_PORT,
         reload=APP_ENV == "development"
