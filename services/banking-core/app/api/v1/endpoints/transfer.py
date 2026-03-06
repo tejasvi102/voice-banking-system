@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.migrations.session import get_db
-from app.schemas.transfer import TransferRequest
+from app.schemas.transfer import TransferRequest, UPITransferRequest
 from app.schemas.transfer_validation import TransferValidationRequest
 from app.services.transfer_service import execute_transfer, validate_transfer
 from app.core.exceptions import (
@@ -10,6 +10,10 @@ from app.core.exceptions import (
     DuplicateTransfer,
     AccountFrozen
 )
+from app.models.upi_handle import UPIHandle
+from app.models.account import Account
+from app.utils.upi_generator import generate_upi_options
+
 
 router = APIRouter()
 
@@ -26,7 +30,7 @@ def execute_transfer_endpoint(
         transaction = execute_transfer(
             db=db,
             from_user_id=request.from_user_id,
-            to_user_id=request.to_user_id,
+            to_upi_id=request.to_upi_id,
             amount=request.amount,
             currency=request.currency,
             idempotency_key=request.idempotency_key
@@ -42,15 +46,6 @@ def execute_transfer_endpoint(
             "error": None
         }
 
-        if amount <= 0:
-            raise ValueError("Amount must be greater than zero")
-
-        if from_user_id == to_user_id:
-            raise ValueError("Cannot transfer to same account")
-
-        if sender.currency != receiver.currency:
-            raise ValueError("Currency mismatch")
-
     except AccountNotFound:
         raise HTTPException(status_code=404, detail="Account not found")
 
@@ -62,8 +57,62 @@ def execute_transfer_endpoint(
 
     except AccountFrozen:
         raise HTTPException(status_code=403, detail="Account is frozen")
+    
 
 
+
+@router.post("/upi-transfer")
+def transfer_via_upi(
+    request: UPITransferRequest,
+    db: Session = Depends(get_db)
+):
+    try:
+
+        # Resolve receiver UPI
+        upi = db.query(UPIHandle).filter(
+            UPIHandle.upi_id == request.to_upi_id
+        ).first()
+
+        if not upi:
+            raise HTTPException(status_code=404, detail="Invalid UPI ID")
+
+        receiver_account = db.query(Account).filter(
+            Account.id == upi.account_id
+        ).first()
+
+        if not receiver_account:
+            raise HTTPException(status_code=404, detail="Receiver account not found")
+
+        # Execute transfer
+        transaction = execute_transfer(
+            db=db,
+            from_user_id=request.from_user_id,
+            to_user_id=receiver_account.user_id,
+            amount=request.amount,
+            currency=request.currency,
+            idempotency_key=request.idempotency_key
+        )
+
+        return {
+            "status": "success",
+            "data": {
+                "transaction_id": str(transaction.id),
+                "amount": str(transaction.amount),
+                "currency": transaction.currency
+            }
+        }
+
+    except AccountNotFound:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    except InsufficientBalance:
+        raise HTTPException(status_code=400, detail="Insufficient balance")
+
+    except DuplicateTransfer:
+        raise HTTPException(status_code=409, detail="Duplicate transfer")
+
+    except AccountFrozen:
+        raise HTTPException(status_code=403, detail="Account frozen")
 # ===============================
 # Validate Transfer
 # ===============================
@@ -74,12 +123,12 @@ def validate_transfer_endpoint(
 ):
     try:
         allowed, reason = validate_transfer(
-            db=db,
-            from_user_id=request.from_user_id,
-            to_user_id=request.to_user_id,
-            amount=request.amount,
-            currency=request.currency
-        )
+        db=db,
+        from_user_id=request.from_user_id,
+        to_upi_id=request.to_upi_id,
+        amount=request.amount,
+        currency=request.currency
+    )
 
         return {
             "status": "success",

@@ -5,7 +5,7 @@ import uvicorn
 from app.db.migrations.session import engine, Base
 from app.models.account import Account
 from app.models.transaction import Transaction
-from app.api.v1.endpoints import transfer, accounts, transactions
+from app.api.v1.endpoints import transfer, accounts, transactions, cards, ledger,upi
 
 Base.metadata.create_all(bind=engine)
 
@@ -34,7 +34,12 @@ app.include_router(
     tags=["Transfers"]
 )
 
+app.include_router(
+    upi.router,
+    prefix="/upi",
+    tags=["UPI"]
 
+)
 
 app.include_router(
     accounts.router,
@@ -43,10 +48,22 @@ app.include_router(
 )
 
 app.include_router(
+    ledger.router,
+    prefix="/ledger",
+    tags=["Ledger"]
+)
+app.include_router(
     transactions.router,
     prefix="/transactions",
     tags=["Transactions"]
 )
+
+app.include_router(
+    cards.router,
+    prefix="/cards",
+    tags=["Cards"]
+)
+
 
 if __name__ == "__main__":
     uvicorn.run(

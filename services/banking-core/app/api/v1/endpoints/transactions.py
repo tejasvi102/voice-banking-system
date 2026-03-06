@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from uuid import UUID
+
 from app.db.migrations.session import get_db
 from app.services.transaction_service import get_user_transactions
 from app.models.transaction import Transaction
@@ -7,13 +9,21 @@ from app.models.transaction import Transaction
 router = APIRouter()
 
 
-@router.get("/{user_id}")
+# ================================
+# Get User Transactions
+# ================================
+@router.get("/user/{user_id}")
 def fetch_transactions(
     user_id: str,
     limit: int = 10,
     offset: int = 0,
     db: Session = Depends(get_db)
 ):
+
+    try:
+        UUID(user_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid user_id format")
 
     transactions = get_user_transactions(
         db=db,
@@ -47,11 +57,21 @@ def fetch_transactions(
         "error": None
     }
 
-@router.get("/detail/{transaction_id}")
+
+# ================================
+# Get Single Transaction
+# ================================
+@router.get("/{transaction_id}")
 def get_transaction_detail(
     transaction_id: str,
     db: Session = Depends(get_db)
 ):
+
+    try:
+        UUID(transaction_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid transaction_id")
+
     transaction = db.query(Transaction).filter(
         Transaction.id == transaction_id
     ).first()
@@ -74,4 +94,4 @@ def get_transaction_detail(
             "created_at": transaction.created_at
         },
         "error": None
-    }    
+    }

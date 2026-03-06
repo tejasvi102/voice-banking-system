@@ -11,7 +11,8 @@ class Account(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
     user_id = Column(UUID(as_uuid=True), unique=True, nullable=False)
-
+    # upi_id = Column(String(50), unique=True, nullable=False, index = True)
+    
     balance = Column(Numeric(15, 2), nullable=False, default=0)
     currency = Column(String(10), nullable=False, default="INR")
     
