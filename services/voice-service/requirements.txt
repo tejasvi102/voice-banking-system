@@ -13,5 +13,8 @@ accelerate
 sentencepiece
 librosa
 httpx
+requests
+langdetect
+groq
 sqlalchemy
 psycopg2-binary

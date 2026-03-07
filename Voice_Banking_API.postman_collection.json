@@ -1,0 +1,646 @@
+{
+	"info": {
+		"_postman_id": "voice-banking-api-collection",
+		"name": "Voice Banking System API",
+		"description": "Complete API collection for Voice Banking System demo",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Checks",
+			"item": [
+				{
+					"name": "API Gateway Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/health",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8000",
+							"path": ["health"]
+						}
+					}
+				},
+				{
+					"name": "User Service Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8007/health",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8007",
+							"path": ["health"]
+						}
+					}
+				},
+				{
+					"name": "Banking Core Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8002/health",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8002",
+							"path": ["health"]
+						}
+					}
+				},
+				{
+					"name": "Voice Service Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8003/health",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8003",
+							"path": ["health"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set('access_token', jsonData.access_token);",
+									"    pm.environment.set('refresh_token', jsonData.refresh_token);",
+									"    pm.environment.set('user_id', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"john.doe@example.com\",\n    \"password\": \"SecurePass123!\",\n    \"full_name\": \"John Doe\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8007/auth/register",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8007",
+							"path": ["auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set('access_token', jsonData.access_token);",
+									"    pm.environment.set('refresh_token', jsonData.refresh_token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"john.doe@example.com\",\n    \"password\": \"SecurePass123!\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8007/auth/login",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8007",
+							"path": ["auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Verify Token",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8007/auth/verify",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8007",
+							"path": ["auth", "verify"]
+						}
+					}
+				},
+				{
+					"name": "Refresh Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refresh_token\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8007/auth/refresh",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8007",
+							"path": ["auth", "refresh"]
+						}
+					}
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8007/auth/logout",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8007",
+							"path": ["auth", "logout"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "User Management",
+			"item": [
+				{
+					"name": "Create User Profile",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"john.doe@example.com\",\n    \"full_name\": \"John Doe\",\n    \"phone\": \"+1234567890\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8007/api/v1/users",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8007",
+							"path": ["api", "v1", "users"]
+						}
+					}
+				},
+				{
+					"name": "Get Current User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8007/api/v1/users/me",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8007",
+							"path": ["api", "v1", "users", "me"]
+						}
+					}
+				},
+				{
+					"name": "Resolve User by Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8007/api/v1/users/resolve?name=Jane&requester_id={{user_id}}",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8007",
+							"path": ["api", "v1", "users", "resolve"],
+							"query": [
+								{
+									"key": "name",
+									"value": "Jane"
+								},
+								{
+									"key": "requester_id",
+									"value": "{{user_id}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Account Management",
+			"item": [
+				{
+					"name": "Create Account",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": \"{{user_id}}\",\n    \"initial_balance\": \"1000.00\",\n    \"currency\": \"USD\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8002/accounts/",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8002",
+							"path": ["accounts", ""]
+						}
+					}
+				},
+				{
+					"name": "Get Account Details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8002/accounts/{{user_id}}",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8002",
+							"path": ["accounts", "{{user_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Get Account Balance",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8002/accounts/{{user_id}}/balance",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8002",
+							"path": ["accounts", "{{user_id}}", "balance"]
+						}
+					}
+				},
+				{
+					"name": "Freeze Account",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8002/accounts/{{user_id}}/freeze",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8002",
+							"path": ["accounts", "{{user_id}}", "freeze"]
+						}
+					}
+				},
+				{
+					"name": "Unfreeze Account",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8002/accounts/{{user_id}}/unfreeze",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8002",
+							"path": ["accounts", "{{user_id}}", "unfreeze"]
+						}
+					}
+				},
+				{
+					"name": "Close Account",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8002/accounts/{{user_id}}/close",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8002",
+							"path": ["accounts", "{{user_id}}", "close"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Transfers",
+			"item": [
+				{
+					"name": "Validate Transfer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"from_user_id\": \"{{user_id}}\",\n    \"to_user_id\": \"{{recipient_user_id}}\",\n    \"amount\": 100.00,\n    \"currency\": \"USD\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8002/transfers/validate",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8002",
+							"path": ["transfers", "validate"]
+						}
+					}
+				},
+				{
+					"name": "Execute Transfer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"from_user_id\": \"{{user_id}}\",\n    \"to_user_id\": \"{{recipient_user_id}}\",\n    \"amount\": 100.00,\n    \"currency\": \"USD\",\n    \"idempotency_key\": \"transfer-{{$timestamp}}\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8002/transfers/execute",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8002",
+							"path": ["transfers", "execute"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Transactions",
+			"item": [
+				{
+					"name": "Get User Transactions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8002/transactions/{{user_id}}?limit=10&offset=0",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8002",
+							"path": ["transactions", "{{user_id}}"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Transaction Detail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8002/transactions/detail/{{transaction_id}}",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8002",
+							"path": ["transactions", "detail", "{{transaction_id}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Voice Biometric",
+			"item": [
+				{
+					"name": "Register Voice",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8003/voice/biometric/register?user_id={{user_id}}",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8003",
+							"path": ["voice", "biometric", "register"],
+							"query": [
+								{
+									"key": "user_id",
+									"value": "{{user_id}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Verify Voice",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8003/voice/biometric/verify?user_id={{user_id}}",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8003",
+							"path": ["voice", "biometric", "verify"],
+							"query": [
+								{
+									"key": "user_id",
+									"value": "{{user_id}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Voice Commands",
+			"item": [
+				{
+					"name": "Process Voice Command",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8003/voice/command/process?user_id={{user_id}}",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8003",
+							"path": ["voice", "command", "process"],
+							"query": [
+								{
+									"key": "user_id",
+									"value": "{{user_id}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Confirm Voice Transfer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"recipient_user_id\": \"{{recipient_user_id}}\",\n    \"amount\": 100.00\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8003/voice/command/confirm-transfer?user_id={{user_id}}",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8003",
+							"path": ["voice", "command", "confirm-transfer"],
+							"query": [
+								{
+									"key": "user_id",
+									"value": "{{user_id}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "recipient_user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "transaction_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
