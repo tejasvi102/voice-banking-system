@@ -132,8 +132,6 @@ services:
     networks:
       - voice-banking-network
 
-<<<<<<< HEAD
-=======
   # audit-service:
   #   build:
   #     context: ./services/audit-service
@@ -156,7 +154,6 @@ services:
   #   networks:
   #     - voice-banking-network
 
->>>>>>> 7c9c952dde0013b0ca3fd9f772bc2075d25b541d
   # stt-service:
   #   build:
   #     context: ./services/stt-service
@@ -176,7 +173,7 @@ services:
   #   networks:
   #     - voice-banking-network
 
-<<<<<<< HEAD
+
   # api-gateway:
   #   build:
   #     context: ./services/api-gateway
@@ -236,7 +233,7 @@ api-gateway:
       start_period: 40s
     networks:
       - voice-banking-network
->>>>>>> 7c9c952dde0013b0ca3fd9f772bc2075d25b541d
+
 
 volumes:
   chroma_db_data:
