@@ -7,8 +7,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-voice_banking}
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+    # ports:
+    #   - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -92,9 +92,8 @@ services:
       USER_SERVICE_URL: http://user-service:8000
     ports:
       - "${VOICE_SERVICE_PORT:-8003}:8000"
-    depends_on:
-      postgres:
-        condition: service_healthy
+    volumes:
+      - chroma_db_data:/app/chroma_db
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 30s
@@ -133,6 +132,31 @@ services:
     networks:
       - voice-banking-network
 
+<<<<<<< HEAD
+=======
+  # audit-service:
+  #   build:
+  #     context: ./services/audit-service
+  #     dockerfile: Dockerfile
+  #   container_name: voice-banking-audit
+  #   restart: unless-stopped
+  #   env_file:
+  #     - ./services/audit-service/.env
+  #   ports:
+  #     - "${AUDIT_SERVICE_PORT:-8005}:8000"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 40s
+  #   networks:
+  #     - voice-banking-network
+
+>>>>>>> 7c9c952dde0013b0ca3fd9f772bc2075d25b541d
   # stt-service:
   #   build:
   #     context: ./services/stt-service
@@ -152,6 +176,7 @@ services:
   #   networks:
   #     - voice-banking-network
 
+<<<<<<< HEAD
   # api-gateway:
   #   build:
   #     context: ./services/api-gateway
@@ -181,21 +206,41 @@ services:
   #     start_period: 40s
   #   networks:
   #     - voice-banking-network
-
-  voice-db:
-    image: ankane/pgvector
-    container_name: voice-banking-voice-db
+=======
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    container_name: voice-banking-gateway
     restart: unless-stopped
-    environment:
-      POSTGRES_DB: voice_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+    env_file:
+      - ./services/api-gateway/.env
     ports:
-      - "5434:5432"
+      - "${API_GATEWAY_PORT:-8000}:8000"
+    depends_on:
+      user-service:
+        condition: service_healthy
+      banking-core:
+        condition: service_healthy
+      voice-service:
+        condition: service_healthy
+      notification-service:
+        condition: service_healthy
+      # audit-service:
+      #   condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     networks:
       - voice-banking-network
+>>>>>>> 7c9c952dde0013b0ca3fd9f772bc2075d25b541d
 
 volumes:
+  chroma_db_data:
+    driver: local
   postgres_data:
     driver: local
 

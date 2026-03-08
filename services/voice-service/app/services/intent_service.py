@@ -11,10 +11,20 @@ from fastapi import HTTPException
 
 load_dotenv()
 
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-
 # Llama 3 8B model on Groq was deprecated; use current replacement by default.
 MODEL_ID = os.getenv("GROQ_INTENT_MODEL", "llama-3.1-8b-instant")
+
+# Lazy initialization of Groq client
+_client = None
+
+def get_groq_client():
+    global _client
+    if _client is None:
+        api_key = os.getenv("GROQ_API_KEY")
+        if not api_key:
+            raise HTTPException(status_code=500, detail="GROQ_API_KEY is not configured")
+        _client = Groq(api_key=api_key)
+    return _client
 
 
 def _extract_json_payload(raw_content: str) -> dict:
@@ -46,9 +56,7 @@ def _extract_json_payload(raw_content: str) -> dict:
 
 
 async def detect_intent_and_entities(text):
-    api_key = os.getenv("GROQ_API_KEY")
-    if not api_key:
-        raise HTTPException(status_code=500, detail="GROQ_API_KEY is not configured")
+    client = get_groq_client()
 
     prompt = f"""
 Extract banking intent and entities.

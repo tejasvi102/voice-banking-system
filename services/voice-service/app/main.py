@@ -10,8 +10,11 @@ from fastapi import FastAPI, HTTPException
 import uvicorn
 from fastapi import Request
 from fastapi.responses import JSONResponse
+
 from app.api.v1.endpoints import biometric, voice_command, voice
 from app.models import voice_profile
+from app.api.v1.endpoints import biometric, voice_command
+
 from app.db.migrations.session import Base, engine
 from sqlalchemy.exc import SQLAlchemyError
 
