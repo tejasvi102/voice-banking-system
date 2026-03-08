@@ -2,7 +2,11 @@ import os
 import json
 import re
 from groq import Groq
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    def load_dotenv(*args, **kwargs):
+        return False
 from fastapi import HTTPException
 
 load_dotenv()
@@ -56,7 +60,7 @@ Return ONLY JSON:
 {{
   "intent": "balance_check | transfer_money | transaction_history | other",
   "amount": number or null,
-  "recipient": string or null
+  "recipient": name or upi_id or null
 }}
 """
 

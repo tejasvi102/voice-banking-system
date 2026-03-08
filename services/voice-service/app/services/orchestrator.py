@@ -109,11 +109,25 @@ async def process_voice_request(user_id, file):
 # ----------------------------
 async def confirm_transfer(user_id: str, recipient_user_id: str, amount: float):
 
+    # Step 1 — fetch recipient UPI from banking-core
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            upi_response = await client.get(
+                f"{BANKING_CORE_URL}/accounts/{recipient_user_id}/upi"
+            )
+    except httpx.RequestError:
+        raise HTTPException(503, "Banking core unavailable")
+
+    if upi_response.status_code != 200:
+        raise HTTPException(404, "Recipient UPI not found")
+
+    recipient_upi = upi_response.json()["upi_id"]
+
     idempotency_key = str(uuid.uuid4())
 
     payload = {
         "from_user_id": user_id,
-        "to_user_id": recipient_user_id,
+        "to_upi_id": recipient_upi,
         "amount": amount,
         "currency": "INR",
         "idempotency_key": idempotency_key
@@ -129,13 +143,7 @@ async def confirm_transfer(user_id: str, recipient_user_id: str, amount: float):
         raise HTTPException(503, "Banking core unavailable")
 
     if response.status_code != 200:
-        detail = "Transfer failed"
-        try:
-            response_payload = response.json()
-            detail = response_payload.get("detail") or detail
-        except Exception:
-            pass
-        raise HTTPException(response.status_code, detail)
+        raise HTTPException(response.status_code, "Transfer failed")
 
     return {
         "status": "success",
@@ -143,3 +151,25 @@ async def confirm_transfer(user_id: str, recipient_user_id: str, amount: float):
         "idempotency_key": idempotency_key,
         "transaction_data": response.json()
     }
+
+from app.clients.banking_client import execute_upi_transfer
+
+
+def handle_intent(user_id, intent_data):
+
+    intent = intent_data["intent"]
+
+    if intent == "transfer_money":
+
+        amount = intent_data["entities"]["amount"]
+        upi_id = intent_data["entities"]["upi_id"]
+
+        result = execute_upi_transfer(
+            user_id=user_id,
+            upi_id=upi_id,
+            amount=amount
+        )
+
+        return result
+
+    return {"message": "Intent not supported"}

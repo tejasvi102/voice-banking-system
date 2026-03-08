@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -29,6 +27,12 @@ services:
     restart: unless-stopped
     env_file:
       - ./services/user-service/.env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-voice_banking}
+      DB_USER: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
       - "${USER_SERVICE_PORT:-8007}:8000"
     depends_on:
@@ -51,6 +55,12 @@ services:
     restart: unless-stopped
     env_file:
       - ./services/banking-core/.env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-voice_banking}
+      DB_USER: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
       - "${BANKING_CORE_PORT:-8002}:8000"
     depends_on:
@@ -73,6 +83,13 @@ services:
     restart: unless-stopped
     env_file:
       - ./services/voice-service/.env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-voice_banking}
+      DB_USER: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      USER_SERVICE_URL: http://user-service:8000
     ports:
       - "${VOICE_SERVICE_PORT:-8003}:8000"
     depends_on:
@@ -96,30 +113,14 @@ services:
     restart: unless-stopped
     env_file:
       - ./services/notification-service/.env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-voice_banking}
+      DB_USER: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
       - "${NOTIFICATION_SERVICE_PORT:-8004}:8000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    networks:
-      - voice-banking-network
-
-  audit-service:
-    build:
-      context: ./services/audit-service
-      dockerfile: Dockerfile
-    container_name: voice-banking-audit
-    restart: unless-stopped
-    env_file:
-      - ./services/audit-service/.env
-    ports:
-      - "${AUDIT_SERVICE_PORT:-8005}:8000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -151,35 +152,35 @@ services:
   #   networks:
   #     - voice-banking-network
 
-  api-gateway:
-    build:
-      context: ./services/api-gateway
-      dockerfile: Dockerfile
-    container_name: voice-banking-gateway
-    restart: unless-stopped
-    env_file:
-      - ./services/api-gateway/.env
-    ports:
-      - "${API_GATEWAY_PORT:-8000}:8000"
-    depends_on:
-      user-service:
-        condition: service_healthy
-      banking-core:
-        condition: service_healthy
-      voice-service:
-        condition: service_healthy
-      notification-service:
-        condition: service_healthy
-      audit-service:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    networks:
-      - voice-banking-network
+  # api-gateway:
+  #   build:
+  #     context: ./services/api-gateway
+  #     dockerfile: Dockerfile
+  #   container_name: voice-banking-gateway
+  #   restart: unless-stopped
+  #   env_file:
+  #     - ./services/api-gateway/.env
+  #   ports:
+  #     - "${API_GATEWAY_PORT:-8000}:8000"
+  #   depends_on:
+  #     user-service:
+  #       condition: service_healthy
+  #     banking-core:
+  #       condition: service_healthy
+  #     voice-service:
+  #       condition: service_healthy
+  #     notification-service:
+  #       condition: service_healthy
+  #     audit-service:
+  #       condition: service_healthy
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 40s
+  #   networks:
+  #     - voice-banking-network
 
   voice-db:
     image: ankane/pgvector

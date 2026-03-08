@@ -1,12 +1,16 @@
 import os
 import logging
 from contextlib import asynccontextmanager
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    def load_dotenv(*args, **kwargs):
+        return False
 from fastapi import FastAPI, HTTPException
 import uvicorn
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from app.api.v1.endpoints import biometric, voice_command
+from app.api.v1.endpoints import biometric, voice_command, voice
 from app.models import voice_profile
 from app.db.migrations.session import Base, engine
 from sqlalchemy.exc import SQLAlchemyError
@@ -76,6 +80,11 @@ app.include_router(
     tags=["Voice Command"]
 )
 
+app.include_router(
+    voice.router,
+    prefix="/voice/profile",
+    tags=["Voice Profile"]
+)
 
 @app.get("/health")
 def health():
