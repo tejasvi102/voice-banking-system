@@ -46,5 +46,5 @@ if __name__ == "__main__":
         reload=APP_ENV == "development",
     )
 
-app.include_router(auth_router)
+app.include_router(auth_router, prefix="/api/v1")
 app.include_router(users_router, prefix="/api/v1")
