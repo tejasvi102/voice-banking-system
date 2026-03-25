@@ -18,7 +18,13 @@ from app.api.v1.endpoints import biometric, voice_command
 from app.db.migrations.session import Base, engine
 from sqlalchemy.exc import SQLAlchemyError
 
+from fastapi import FastAPI
 
+app = FastAPI()
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
 
 # Load environment variables
 load_dotenv()

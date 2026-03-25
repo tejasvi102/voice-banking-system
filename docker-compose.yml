@@ -204,7 +204,7 @@ services:
   #   networks:
   #     - voice-banking-network
 
-api-gateway:
+  api-gateway:
     build:
       context: ./services/api-gateway
       dockerfile: Dockerfile
