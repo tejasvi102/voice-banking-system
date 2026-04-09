@@ -79,13 +79,13 @@ app = FastAPI(
 # Routers
 app.include_router(
     biometric.router,
-    prefix="/voice/biometric",
+    prefix="/api/v1/biometric",
     tags=["Biometric"]
 )
 
 app.include_router(
     voice_command.router,
-    prefix="/voice/command",
+    prefix="/api/v1/command",
     tags=["Voice Command"]
 )
 

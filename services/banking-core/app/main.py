@@ -41,7 +41,7 @@ def health():
 
 app.include_router(
     transfer.router,
-    prefix="/transfers",
+    prefix="/api/v1/transfers",
     tags=["Transfers"]
 )
 
@@ -49,13 +49,13 @@ app.include_router(
 
 app.include_router(
     accounts.router,
-    prefix="/accounts",
+    prefix="/api/v1/accounts",
     tags=["Accounts"]
 )
 
 app.include_router(
     transactions.router,
-    prefix="/transactions",
+    prefix="/api/v1/transactions",
     tags=["Transactions"]
 )
 

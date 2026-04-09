@@ -4,8 +4,10 @@ import httpx
 from fastapi import HTTPException
 from app.services import stt_service, intent_service
 
-USER_SERVICE_URL = os.getenv("USER_SERVICE_URL", "http://localhost:8007")
-BANKING_CORE_URL = os.getenv("BANKING_CORE_URL", "http://localhost:8002")
+# When running inside Docker Compose, use service DNS names.
+# (localhost would refer to this container itself.)
+USER_SERVICE_URL = os.getenv("USER_SERVICE_URL", "http://user-service:8000")
+BANKING_CORE_URL = os.getenv("BANKING_CORE_URL", "http://banking-core:8000")
 
 
 # ----------------------------
@@ -136,7 +138,7 @@ async def confirm_transfer(user_id: str, recipient_user_id: str, amount: float):
     try:
         async with httpx.AsyncClient(timeout=8.0) as client:
             response = await client.post(
-                f"{BANKING_CORE_URL}/transfers/execute",
+                f"{BANKING_CORE_URL}/api/v1/transfers/execute",
                 json=payload
             )
     except httpx.RequestError:
